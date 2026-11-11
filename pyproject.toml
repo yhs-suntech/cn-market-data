@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cn-market-data"
+version = "0.1.0"
+description = "Unified A-share data source package: L1 sole network layer, L2 data contract, L3 shared Parquet warehouse."
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+http = [
+    "requests>=2.31",
+    "certifi>=2023",
+]
+providers = [
+    "akshare",
+    "baostock",
+    "tushare",
+    "mootdx",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cn_market_data = ["*.py"]

@@ -1,0 +1,9 @@
+# P1 package
+__pycache__/
+*.pyc
+# L3 shared warehouse runtime data (written by post-sync job, git-ignored)
+warehouse/manifest.json
+# build artifacts (editable install egg-info)
+src/**/*.egg-info/
+# Local venv (if ever added)
+.venv/
