@@ -22,6 +22,10 @@ providers = [
     "tushare",
     "mootdx",
 ]
+warehouse = [
+    "pyarrow>=14",
+    "duckdb>=0.10",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
