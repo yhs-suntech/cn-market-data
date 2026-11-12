@@ -1,8 +1,8 @@
-# cn-market-data — A股数据统一包（P1 已交付骨架）
+# cn-market-data — A股数据统一包（P1 已交付 + P2 L3 共享仓）
 
 **包名**：`cn-market-data`（独立仓 `D:/git_project/cn-market-data`）
 **覆盖**：TSP / PanWatch / InStock / Vibe-Trading / Hermes（含 cron 薄壳）+ 未来项目
-**当前状态**：P1（抽包 + 切缝 + 契约 + L2 合约）已交付骨架；P2 待接入 InStock+Hermes；**本地通达信离线兜底源已实现**（`vipdoc/lday/*.day` 解析，网络源优先、离线兜底）。
+**当前状态**：P1（抽包 + 切缝 + 契约 + L2 合约）已交付；**P2 L3 共享仓已建成**（pyarrow 写/读 + duckdb 交叉查询 + cache_version=9 门控），盘后 sync job 已首跑（日K 4605 只/560 万根 → 2026-11-11，flavor lhb/dzjy/fhps/zttp ← InStock MySQL）。
 **设计基线**：`docs/unified-a-share-data-design.md`（v0.1）
 
 ## 三层架构
