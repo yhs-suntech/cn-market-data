@@ -246,9 +246,10 @@ class L3Store:
     # ------------------------------------------------------------------- flavor
 
     def flavor_dir(self, dataset: str) -> Path:
-        # flavor/<DATASETS[ds]>/  (per dataset_to_path, date files inside)
-        rel = dataset_to_path(dataset)  # flavor/<name>/YYYY-MM-DD/
-        return self.root / rel.rsplit("/", 1)[0]
+        # flavor/<DATASETS[ds]>/ — date parquets sit directly inside.  (The
+        # "YYYY-MM-DD" in dataset_to_path is a template placeholder, NOT a
+        # literal folder, so we anchor on flavor/<name>.)
+        return self.root / "flavor" / DATASETS[dataset]
 
     def write_flavor(self, dataset: str, df: pd.DataFrame, source: str) -> None:
         """Write per-date cross-section parquets for one flavor dataset."""
