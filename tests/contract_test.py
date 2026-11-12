@@ -86,5 +86,77 @@ class TestFlavorSchema(unittest.TestCase):
             self.assertIn(ds, flavor_schema.DATASETS, f"dataset {ds} missing from registry")
 
 
+class TestL3Warehouse(unittest.TestCase):
+    """L3 共享仓: L2 read contract + cache_version gate (skips without pyarrow)."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import pyarrow  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest("pyarrow not installed — L3 warehouse tests skipped")
+
+    def test_daily_read_contract_and_version_gate(self):
+        import json
+        import tempfile
+
+        import pandas as pd
+        from cn_market_data.warehouse.store import CacheVersionMismatch, L3Store
+
+        with tempfile.TemporaryDirectory() as tmp:
+            store = L3Store(tmp)
+            store.init_warehouse()
+            df = pd.DataFrame(
+                {
+                    "code": ["600406", "600406"],
+                    "trade_date": pd.to_datetime(["2026-11-10", "2026-11-11"]),
+                    "open": [23.6, 23.4],
+                    "high": [23.7, 23.5],
+                    "low": [23.3, 23.0],
+                    "close": [23.4, 23.1],
+                    "volume": [1000, 2000],
+                    "amount": [2.0e5, 4.0e5],
+                }
+            )
+            self.assertEqual(store.write_daily_market("sh", df, source="test"), 1)
+            out = store.read_daily(["600406"])
+            self.assertIn("600406", out)
+            self.assertEqual(
+                list(out["600406"].columns),
+                ["open", "high", "low", "close", "volume", "amount"],
+            )
+            self.assertEqual(out["600406"].attrs["adjustment"], "none")
+            self.assertEqual(len(out["600406"]), 2)
+
+            # cache_version 门控：磁盘版本漂移后，旧读者必须拒绝读
+            m = json.loads(store.manifest_path.read_text(encoding="utf-8"))
+            m["cache_version"] = 99
+            store.manifest_path.write_text(json.dumps(m), encoding="utf-8")
+            with self.assertRaises(CacheVersionMismatch):
+                L3Store(tmp)
+
+    def test_flavor_partition_roundtrip(self):
+        import tempfile
+
+        import pandas as pd
+        from cn_market_data.warehouse.store import L3Store
+
+        with tempfile.TemporaryDirectory() as tmp:
+            store = L3Store(tmp)
+            store.init_warehouse()
+            df = pd.DataFrame(
+                {
+                    "code": ["600406", "000001"],
+                    "date": ["2026-10-08", "2026-10-08"],
+                    "ranking_times": [1, 2],
+                    "reason": ["x", "y"],
+                }
+            )
+            store.write_flavor("lhb", df, source="test")
+            back = store.read_flavor("lhb", "2026-10-08")
+            self.assertEqual(len(back), 2)
+            self.assertEqual(sorted(back["code"]), ["000001", "600406"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
