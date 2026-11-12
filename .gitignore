@@ -7,3 +7,5 @@ warehouse/manifest.json
 src/**/*.egg-info/
 # Local venv (if ever added)
 .venv/
+# scratch API-response dumps (PR creation attempts) — never commit
+create_pr*.json
